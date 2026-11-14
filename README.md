@@ -1,2 +1,4 @@
 # Minesweeper
-Minesweeper game 
+Minesweeper game using Pygame.
+
+
