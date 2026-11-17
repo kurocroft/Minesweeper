@@ -22,6 +22,15 @@ class Minezone:
                 self.grid[i][j] = Cell(mine, (i*30+20), (j*30+20), 25)
                 self.grid[i][j].renderCell()
 
+    #hover detection
+    def hover(self):
+        mousePos = pygame.mouse.get_pos()
+        for i in range(self.width):
+            for j in range(self.height):
+                if self.grid[i][j].collidepoint(mousePos):
+                    self.colour = 'fuschia'
+                else: self.colour = 'chartreuse3'
+
 
 
 class Cell:
@@ -47,13 +56,13 @@ class Cell:
 
     def updateColour(self):
             if self.mystery:
-                self.colour = green
+                self.colour = 'chartreuse3'
             elif self.flag:
-                self.colour = red
+                self.colour = 'red'
             elif self.found:
-                self.colour = purple
+                self.colour = 'purple'
             elif self.clear:
-                self.colour = yellow
+                self.colour = 'yellow'
 
 
     def clicked(self):
@@ -67,10 +76,7 @@ class Cell:
         self.updateColour()
         self.renderCell()
 
-    # Mouse Collision
-    def detectClick():
-        mousePos = pygame.mouse.get_pos()
-        if self.collidepoint(mousePos) and #if mouse is over the thing and mouse is clicked....
+            
 
 
 
@@ -96,7 +102,8 @@ while open:
     NewMine = Minezone(10, 10)
     NewMine.renderMinezone()
 
-    
+    NewMine.hover()
+
 
     pygame.display.update()
 
