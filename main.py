@@ -29,13 +29,16 @@ class Cell:
         #boolean value passed upon creation
         self.mine = mine
         self.flag = False
-        #a revealed MINE cell
-        self.revealed = False
         self.mystery = True
         self.clicked = False
 
+        #a revealed MINE cell
+        self.found = False
+        #a revealed CLEAR cell
+        self.clear = False
+
         #parameters for rect
-        self.colour = "chartreuse2"
+        self.colour = "chartreuse3"
         self.x = x
         self.y = y
         self.l = l
@@ -47,8 +50,29 @@ class Cell:
                 self.colour = green
             elif self.flag:
                 self.colour = red
-            elif self.revealed:
+            elif self.found:
                 self.colour = purple
+            elif self.clear:
+                self.colour = yellow
+
+
+    def clicked(self):
+        self.clicked = True
+        if self.mine:
+            self.found = True
+            print("GAME OVER")
+        else:
+            self.clear = True
+
+        self.updateColour()
+        self.renderCell()
+
+    # Mouse Collision
+    def detectClick():
+        mousePos = pygame.mouse.get_pos()
+        if self.collidepoint(mousePos) and #if mouse is over the thing and mouse is clicked....
+
+
 
     def renderCell(self):
         pygame.draw.rect(display_surface, self.colour, pygame.Rect(self.x, self.y, self.l, self.l))
@@ -61,16 +85,6 @@ pygame.display.set_caption("Minesweeper")
 
 cellColour = (255, 255, 203)  
 
-#def renderGrid(colour):
-#    for i in range(5):
-#        for j in range(5):
-#            pygame.draw.rect(display_surface, colour, pygame.Rect(i*25+20, j*25+20, 20, 20))
-
-
-
-
-
-
 while open:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -81,6 +95,8 @@ while open:
    
     NewMine = Minezone(10, 10)
     NewMine.renderMinezone()
+
+    
 
     pygame.display.update()
 
