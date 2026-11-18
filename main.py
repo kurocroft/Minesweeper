@@ -36,10 +36,10 @@ class Minezone:
     #           This is low priority right now.
 
     #For each cell, detects if its been clicked
-    def click(self):
+    def leftClick(self):
         for i in range(self.width):
             for j in range(self.height):
-                self.grid[i][j].checkClick()
+                self.grid[i][j].checkLeftClick()
 
 
 #Defines each cell in the grid defined in Minezone
@@ -49,7 +49,7 @@ class Cell:
         self.mine = mine
         self.flag = False
         self.mystery = True
-        self.clicked = False
+        self.leftClicked = False
 
         #a revealed MINE cell
         self.found = False
@@ -64,23 +64,25 @@ class Cell:
         #rect object
         self.rectangle = pygame.Rect(self.x, self.y, self.l, self.l)
 
-    # Changes attributes depending on updates
+    # Changes attributes depending on clicks
     def updateClick(self):
-        if self.clicked:
+        if self.leftClicked:
             self.mystery = False
             if self.mine:
                 self.found = True
                 print("GAME OVER")
             else:
                 self.clear = True
+        
         self.updateColour()
         self.renderCell()
+        self.leftClicked = False
 
-    # Checks if the cell has been clicked
-    def checkClick(self):
+    # Checks if the cell has been left-clicked
+    def checkLeftClick(self):
         mousePos = pygame.mouse.get_pos()
         if self.rectangle.collidepoint(mousePos):
-            self.clicked = True
+            self.leftClicked = True
             self.updateClick()
 
     # Updates colour depending on attribute
@@ -122,7 +124,7 @@ while open:
 
         # Watches for mouse click
         if event.type == pygame.MOUSEBUTTONUP:
-            NewMine.click()
+            NewMine.leftClick()
 
     pygame.display.update()
 
