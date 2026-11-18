@@ -9,6 +9,11 @@ wWidth = 600
 #Ensure it doesn't quit immediately upon starting
 open = True
 
+# Background surface
+display_surface = pygame.display.set_mode((wWidth, wHeight))
+# Application title
+pygame.display.set_caption("Minesweeper")
+
 # making our grid
 class Minezone:
     def __init__(self, width, height):
@@ -22,45 +27,13 @@ class Minezone:
         for i in range(self.width):
             for j in range(self.height):
                 value = 0
-                surround8 = [self.grid[i-1][j-1], self.grid[i-1][j], self.grid[i-1][j+1], self.grid[i][j-1], self.grid[i][j+1], self.grid[i+1][j-1], self.grid[i+1][j], self.grid[i+1][j-1]]
-                surroundTL = [self.grid[i+1][j], self.grid[i+1][j+1], self.grid[i][j+1]]
-                surroundTR = [self.grid[i][j-1], self.grid[i+1][j-1], self.grid[i+1][j]]
-                surroundBL = [self.grid[i-1][j], self.grid[i-1][j+1], self.grid[i][j+1]]
-                surroundBR = [self.grid[i][j-1], self.grid[i-1][j], self.grid[i-1][j-1]]
-                if i < 1:
-                    if j < 1:
-                        # if the cell is in position (0,0) (TL)
-                        for x in range(len(surroundTL)):
-                            if surroundTL[x].mine:
-                                value += 1
-                    elif j == self.height-1:
-                        for x in range(len(surroundTR)):
-                            if surroundTR[x].mine:
-                                value += 1
-                    else:
-                        # top row will never have above positions
-
-                        # if the cell is in position (0,max) (TR)
-                elif i == self.width-1:
-                    if j<1:
-                        # if cell is in position (max, 0) (BL)
-
-                        for x in range(len(surroundBL)):
-                            if surroundBL[x].mine:
-                                value += 1
-                    elif j == self.height-1:
-                        # if cell is in position (max, max) (BR)
-
-                        for x in range(len(surroundBR)):
-                            if surroundBR[x].mine:
-                                value += 1
-                    else:
-                        #bbottom row will never have below positions
-                else:
-                    #if cell is in any other positon
-                    for x in range(len(surround8)):
-                        if surround8[x].mine:
+                surround8 = [[i-1, j-1], [i-1, j], [i-1, j+1], [i, j-1], [i, j+1], [i+1, j-1], [i+1, j], [i+1, j+1]]
+                for x in range(len(surround8)):
+                    try:
+                        if self.grid[surround8[x][0]][surround8[x][1]].mine:
                             value += 1
+                    except IndexError:
+                        value += 0
                 self.grid[i][j].dangerValue = value
                         
 
@@ -94,6 +67,11 @@ class Minezone:
             for j in range(self.height):
                 self.grid[i][j].checkRightClick()
 
+    def update(self):
+        for i in range(self.width):
+            for j in range(self.height):
+                self.grid[i][j].updateClick()
+
 
 #Defines each cell in the grid defined in Minezone
 class Cell:
@@ -121,6 +99,8 @@ class Cell:
         self.l = l
         #rect object
         self.rectangle = pygame.Rect(self.x, self.y, self.l, self.l)
+        self.font = pygame.font.SysFont('Arial', 18)
+        
 
     # Changes attributes depending on clicks
     def updateClick(self):
@@ -137,6 +117,7 @@ class Cell:
                 self.flag = False
             else:
                 self.flag = True
+        
 
 
         self.updateColour()
@@ -170,20 +151,19 @@ class Cell:
 
     # Renders the Cell
     def renderCell(self):
-        pygame.draw.rect(display_surface, self.colour, self.rectangle)
+        self.render = pygame.draw.rect(display_surface, self.colour, self.rectangle)
+        if self.mystery == False:
+            display_surface.blit(self.font.render(str(self.dangerValue), True, "crimson", None), self.rectangle.center)
 
 
 
-# Background surface
-display_surface = pygame.display.set_mode((wWidth, wHeight))
-# Application title
-pygame.display.set_caption("Minesweeper")
+
 
 # Define new Minezone  
 NewMine = Minezone(10, 10)
 # Initialise Cells
 NewMine.createCells()
-#NewMine.findCellValues()
+NewMine.findCellValues()
 
 while open:
     # Watches for events 
