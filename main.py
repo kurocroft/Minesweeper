@@ -41,6 +41,11 @@ class Minezone:
             for j in range(self.height):
                 self.grid[i][j].checkLeftClick()
 
+    def rightClick(self):
+        for i in range(self.width):
+            for j in range(self.height):
+                self.grid[i][j].checkRightClick()
+
 
 #Defines each cell in the grid defined in Minezone
 class Cell:
@@ -49,7 +54,10 @@ class Cell:
         self.mine = mine
         self.flag = False
         self.mystery = True
+
+        #for mouse input
         self.leftClicked = False
+        self.rightClicked = False
 
         #a revealed MINE cell
         self.found = False
@@ -74,9 +82,17 @@ class Cell:
             else:
                 self.clear = True
         
+        if self.rightClicked:
+            if self.flag:
+                self.flag = False
+            else:
+                self.flag = True
+
+
         self.updateColour()
         self.renderCell()
         self.leftClicked = False
+        self.rightClicked = False
 
     # Checks if the cell has been left-clicked
     def checkLeftClick(self):
@@ -84,10 +100,18 @@ class Cell:
         if self.rectangle.collidepoint(mousePos):
             self.leftClicked = True
             self.updateClick()
+    
+    def checkRightClick(self):
+        mousePos = pygame.mouse.get_pos()
+        if self.rectangle.collidepoint(mousePos):
+            self.rightClicked = True
+            self.updateClick()
 
     # Updates colour depending on attribute
     def updateColour(self):
-        if self.mystery:
+        if self.flag:
+            self.colour = 'crimson'
+        elif self.mystery:
             self.colour = 'chartreuse3'
         elif self.found:
             self.colour = 'purple'
@@ -116,15 +140,25 @@ while open:
         # Checks if app closed
         if event.type == pygame.QUIT:
             open = False
-
+        
         display_surface.fill('pink')
 
         # renders the minezone
         NewMine.renderMinezone()
 
+
         # Watches for mouse click
-        if event.type == pygame.MOUSEBUTTONUP:
-            NewMine.leftClick()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            left = pygame.mouse.get_pressed()[0]
+            right = pygame.mouse.get_pressed()[2]
+            if left:
+                NewMine.leftClick()
+            if right == True:
+                NewMine.rightClick()
+        
+        
+
+
 
     pygame.display.update()
 
