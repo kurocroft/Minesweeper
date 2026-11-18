@@ -22,14 +22,12 @@ class Minezone:
                 self.grid[i][j] = Cell(mine, (i*30+20), (j*30+20), 25)
                 self.grid[i][j].renderCell()
 
-    #hover detection
-    def hover(self):
-        mousePos = pygame.mouse.get_pos()
+    #hover detection - must be done using event watcher
+    def click(self):
         for i in range(self.width):
             for j in range(self.height):
-                if self.grid[i][j].collidepoint(mousePos):
-                    self.colour = 'fuschia'
-                else: self.colour = 'chartreuse3'
+                self.grid[i][j].checkClick()
+
 
 
 
@@ -51,9 +49,9 @@ class Cell:
         self.x = x
         self.y = y
         self.l = l
-
-
-
+        #rect object
+        self.rectangle = pygame.Rect(self.x, self.y, self.l, self.l)
+        
     def updateColour(self):
             if self.mystery:
                 self.colour = 'chartreuse3'
@@ -76,12 +74,16 @@ class Cell:
         self.updateColour()
         self.renderCell()
 
-            
+    def checkClick(self):
+        mousePos = pygame.mouse.get_pos()
+        if self.rectangle.collidepoint(mousePos):
+            self.colour = 'aqua'
+            self.renderCell()
 
 
 
     def renderCell(self):
-        pygame.draw.rect(display_surface, self.colour, pygame.Rect(self.x, self.y, self.l, self.l))
+        pygame.draw.rect(display_surface, self.colour, self.rectangle)
 
 
 
@@ -94,15 +96,17 @@ cellColour = (255, 255, 203)
 while open:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            open = False;
+            open = False
+        
+        display_surface.fill('pink')
+        
+        NewMine = Minezone(10, 10)
+        NewMine.renderMinezone()
+        if event.type == pygame.MOUSEBUTTONUP:
+            NewMine.click()
    
 
-    display_surface.fill('pink')
-   
-    NewMine = Minezone(10, 10)
-    NewMine.renderMinezone()
-
-    NewMine.hover()
+    
 
 
     pygame.display.update()
