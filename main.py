@@ -8,6 +8,8 @@ wHeight = 400
 wWidth = 600
 #Ensure it doesn't quit immediately upon starting
 open = True
+sizex = 10
+sizey = 10
 
 # Background surface
 display_surface = pygame.display.set_mode((wWidth, wHeight))
@@ -26,14 +28,21 @@ class Minezone:
     def findCellValues(self):
         for i in range(self.width):
             for j in range(self.height):
-                value = 0
-                surround8 = [[i-1, j-1], [i-1, j], [i-1, j+1], [i, j-1], [i, j+1], [i+1, j-1], [i+1, j], [i+1, j+1]]
-                for x in range(len(surround8)):
-                    try:
-                        if self.grid[surround8[x][0]][surround8[x][1]].mine:
-                            value += 1
-                    except IndexError:
-                        value += 0
+                if self.grid[i][j].mine:
+                    value = -1
+                else:
+                    value = 0
+                    surround8 = [[i-1, j-1], [i-1, j], [i-1, j+1], [i, j-1], [i, j+1], [i+1, j-1], [i+1, j], [i+1, j+1]]
+                    for x in range(len(surround8)):
+                        try:
+                            if surround8[x][0] == -1 or surround8[x][1] == -1:
+                                continue
+                            else:
+                                if self.grid[surround8[x][0]][surround8[x][1]].mine:
+                                    value += 1
+                        except IndexError:
+                            value += 0
+                    
                 self.grid[i][j].dangerValue = value
                         
 
@@ -153,14 +162,14 @@ class Cell:
     def renderCell(self):
         self.render = pygame.draw.rect(display_surface, self.colour, self.rectangle)
         if self.mystery == False:
-            display_surface.blit(self.font.render(str(self.dangerValue), True, "crimson", None), self.rectangle.center)
+            display_surface.blit(self.font.render(str(self.dangerValue), True, "crimson", None), (self.rectangle.centerx-5, self.rectangle.centery-10))
 
 
 
 
 
 # Define new Minezone  
-NewMine = Minezone(10, 10)
+NewMine = Minezone(sizex, sizey)
 # Initialise Cells
 NewMine.createCells()
 NewMine.findCellValues()
