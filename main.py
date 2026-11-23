@@ -4,10 +4,17 @@ import random
 #Initialise the pygame
 pygame.init()
 #Window preferences
-wHeight = 400
-wWidth = 600
+wHeight = 500
+wWidth = 500
 #Ensure it doesn't quit immediately upon starting
 open = True
+sizex = 15
+sizey = 15
+
+# Background surface
+display_surface = pygame.display.set_mode((wWidth, wHeight))
+# Application title
+pygame.display.set_caption("Minesweeper")
 
 # making our grid
 class Minezone:
@@ -16,6 +23,29 @@ class Minezone:
         self.height = height
         # in this grid, 0 represents unknown/grass. 1 represents explored & no mine. 2 represents mine. 3 represents flagged.
         self.grid = [[0 for i in range(width)] for j in range(height)]
+
+    # for all cells, finds mines within their vicinity
+    def findNeighbours(self):
+        for i in range(self.width):
+            for j in range(self.height):
+                neighbourslist = []
+                surround8 = [[i-1, j-1], [i-1, j], [i-1, j+1], [i, j-1], [i, j+1], [i+1, j-1], [i+1, j], [i+1, j+1]]
+                for x in range(len(surround8)):
+                    try:
+                        if surround8[x][0] == -1 or surround8[x][1] == -1:
+                            continue
+                        else:
+                            neighbourslist.append(self.grid[surround8[x][0]][surround8[x][1]])
+                    except IndexError:
+                        pass
+                self.grid[i][j].neighbours = neighbourslist
+    
+    # Finds the number of each cell
+    def findDangerValMinezone(self):
+        for i in range(self.width):
+            for j in range(self.height):
+                self.grid[i][j].findDangerValCell()
+
 
     # Creates the initial cells in the Minezone grid
     def createCells(self):
@@ -46,6 +76,12 @@ class Minezone:
             for j in range(self.height):
                 self.grid[i][j].checkRightClick()
 
+    # updates every cell in grid
+    def update(self):
+        for i in range(self.width):
+            for j in range(self.height):
+                self.grid[i][j].updateClick()
+
 
 #Defines each cell in the grid defined in Minezone
 class Cell:
@@ -54,6 +90,9 @@ class Cell:
         self.mine = mine
         self.flag = False
         self.mystery = True
+        # How many mines in Vicinity
+        self.dangerValue = 0
+        self.neighbours = []
 
         #for mouse input
         self.leftClicked = False
@@ -71,11 +110,31 @@ class Cell:
         self.l = l
         #rect object
         self.rectangle = pygame.Rect(self.x, self.y, self.l, self.l)
+        self.font = pygame.font.SysFont('Arial', 18)
+    
+    def findDangerValCell(self):
+        if self.mine == False:
+            for x in range(len(self.neighbours)):
+                if self.neighbours[x].mine:
+                    self.dangerValue += 1
+        else:
+            self.dangerValue = -1
+ 
+
 
     # Changes attributes depending on clicks
     def updateClick(self):
         if self.leftClicked:
             self.mystery = False
+            #reveals connection neighbours that have 0 as a danger value
+            for x in self.neighbours:
+                if x.dangerValue == 0:
+                    if x.mystery==True:
+                        x.leftClicked = True
+                        x.updateClick()
+                        for y in x.neighbours:
+                            y.leftClicked = True
+                            y.updateClick()
             if self.mine:
                 self.found = True
                 print("GAME OVER")
@@ -87,7 +146,6 @@ class Cell:
                 self.flag = False
             else:
                 self.flag = True
-
 
         self.updateColour()
         self.renderCell()
@@ -120,19 +178,21 @@ class Cell:
 
     # Renders the Cell
     def renderCell(self):
-        pygame.draw.rect(display_surface, self.colour, self.rectangle)
+        
+        self.render = pygame.draw.rect(display_surface, self.colour, self.rectangle)
+        if self.mystery == False and self.dangerValue > 0:
+            display_surface.blit(self.font.render(str(self.dangerValue), True, "crimson", None), (self.rectangle.centerx-5, self.rectangle.centery-10))
 
 
 
-# Background surface
-display_surface = pygame.display.set_mode((wWidth, wHeight))
-# Application title
-pygame.display.set_caption("Minesweeper")
+
 
 # Define new Minezone  
-NewMine = Minezone(10, 10)
+NewMine = Minezone(sizex, sizey)
 # Initialise Cells
 NewMine.createCells()
+NewMine.findNeighbours()
+NewMine.findDangerValMinezone()
 
 while open:
     # Watches for events 
@@ -156,9 +216,6 @@ while open:
             if right == True:
                 NewMine.rightClick()
         
-        
-
-
 
     pygame.display.update()
 
