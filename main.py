@@ -25,26 +25,26 @@ class Minezone:
         self.grid = [[0 for i in range(width)] for j in range(height)]
 
     # for all cells, finds mines within their vicinity
-    def findCellValues(self):
+    def findNeighbours(self):
         for i in range(self.width):
             for j in range(self.height):
-                if self.grid[i][j].mine:
-                    value = -1
-                else:
-                    value = 0
-                    surround8 = [[i-1, j-1], [i-1, j], [i-1, j+1], [i, j-1], [i, j+1], [i+1, j-1], [i+1, j], [i+1, j+1]]
-                    for x in range(len(surround8)):
-                        try:
-                            if surround8[x][0] == -1 or surround8[x][1] == -1:
-                                continue
-                            else:
-                                if self.grid[surround8[x][0]][surround8[x][1]].mine:
-                                    value += 1
-                        except IndexError:
-                            value += 0
-                    
-                self.grid[i][j].dangerValue = value
-                        
+                neighbourslist = []
+                surround8 = [[i-1, j-1], [i-1, j], [i-1, j+1], [i, j-1], [i, j+1], [i+1, j-1], [i+1, j], [i+1, j+1]]
+                for x in range(len(surround8)):
+                    try:
+                        if surround8[x][0] == -1 or surround8[x][1] == -1:
+                            continue
+                        else:
+                            neighbourslist.append(self.grid[surround8[x][0]][surround8[x][1]])
+                    except IndexError:
+                        pass
+                self.grid[i][j].neighbours = neighbourslist
+    
+    # Finds the number of each cell
+    def findDangerValMinezone(self):
+        for i in range(self.width):
+            for j in range(self.height):
+                self.grid[i][j].findDangerValCell()
 
 
     # Creates the initial cells in the Minezone grid
@@ -76,6 +76,7 @@ class Minezone:
             for j in range(self.height):
                 self.grid[i][j].checkRightClick()
 
+    # updates every cell in grid
     def update(self):
         for i in range(self.width):
             for j in range(self.height):
@@ -110,12 +111,30 @@ class Cell:
         #rect object
         self.rectangle = pygame.Rect(self.x, self.y, self.l, self.l)
         self.font = pygame.font.SysFont('Arial', 18)
-        
+    
+    def findDangerValCell(self):
+        if self.mine == False:
+            for x in range(len(self.neighbours)):
+                if self.neighbours[x].mine:
+                    self.dangerValue += 1
+        else:
+            self.dangerValue = -1
+ 
+
 
     # Changes attributes depending on clicks
     def updateClick(self):
         if self.leftClicked:
             self.mystery = False
+            #reveals connection neighbours that have 0 as a danger value
+            for x in self.neighbours:
+                if x.dangerValue == 0:
+                    if x.mystery==True:
+                        x.leftClicked = True
+                        x.updateClick()
+                        for y in x.neighbours:
+                            y.leftClicked = True
+                            y.updateClick()
             if self.mine:
                 self.found = True
                 print("GAME OVER")
@@ -159,8 +178,9 @@ class Cell:
 
     # Renders the Cell
     def renderCell(self):
+        
         self.render = pygame.draw.rect(display_surface, self.colour, self.rectangle)
-        if self.mystery == False:
+        if self.mystery == False and self.dangerValue > 0:
             display_surface.blit(self.font.render(str(self.dangerValue), True, "crimson", None), (self.rectangle.centerx-5, self.rectangle.centery-10))
 
 
@@ -171,7 +191,8 @@ class Cell:
 NewMine = Minezone(sizex, sizey)
 # Initialise Cells
 NewMine.createCells()
-NewMine.findCellValues()
+NewMine.findNeighbours()
+NewMine.findDangerValMinezone()
 
 while open:
     # Watches for events 
