@@ -4,12 +4,12 @@ import random
 #Initialise the pygame
 pygame.init()
 #Window preferences
-wHeight = 400
-wWidth = 600
+wHeight = 500
+wWidth = 500
 #Ensure it doesn't quit immediately upon starting
 open = True
-sizex = 10
-sizey = 10
+sizex = 15
+sizey = 15
 
 # Background surface
 display_surface = pygame.display.set_mode((wWidth, wHeight))
@@ -91,6 +91,7 @@ class Cell:
         self.mystery = True
         # How many mines in Vicinity
         self.dangerValue = 0
+        self.neighbours = []
 
         #for mouse input
         self.leftClicked = False
@@ -126,8 +127,6 @@ class Cell:
                 self.flag = False
             else:
                 self.flag = True
-        
-
 
         self.updateColour()
         self.renderCell()
@@ -196,9 +195,6 @@ while open:
             if right == True:
                 NewMine.rightClick()
         
-        
-
-
 
     pygame.display.update()
 
