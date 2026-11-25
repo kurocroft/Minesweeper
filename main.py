@@ -5,11 +5,16 @@ import random
 pygame.init()
 #Window preferences
 wHeight = 500
-wWidth = 500
+wWidth = 700
 #Ensure it doesn't quit immediately upon starting
 open = True
 sizex = 15
 sizey = 15
+
+#difficulties
+easy = "easy"
+medium = "medium"
+hard = "hard"
 
 # Background surface
 display_surface = pygame.display.set_mode((wWidth, wHeight))
@@ -18,11 +23,14 @@ pygame.display.set_caption("Minesweeper")
 
 # making our grid
 class Minezone:
-    def __init__(self, width, height):
-        self.width = width
-        self.height = height
+    def __init__(self, difficulty):
+        
         # in this grid, 0 represents unknown/grass. 1 represents explored & no mine. 2 represents mine. 3 represents flagged.
-        self.grid = [[0 for i in range(width)] for j in range(height)]
+        self.difficulty = difficulty
+        self.mineCount = 0
+        self.width = 0
+        self.height = 0
+        
 
     # for all cells, finds mines within their vicinity
     def findNeighbours(self):
@@ -49,11 +57,34 @@ class Minezone:
 
     # Creates the initial cells in the Minezone grid
     def createCells(self):
+        match(self.difficulty):
+            # adjust size based on difficulty
+            case "easy":
+                self.width = 9
+                self.height = 9
+                self.mineCount = 10
+            case "medium":
+                self.width = 12
+                self.height = 12
+                self.mineCount = 20
+            case "hard":
+                self.width = 16
+                self.height = 16
+                self.mineCount = 40
+        self.grid = [[0 for i in range(self.width)] for j in range(self.height)]
         for i in range(self.width):
             for j in range(self.height):
-                mineNum = random.randint(1, 20)
-                mine = True if mineNum < 6 else False
-                self.grid[i][j] = Cell(mine, (i*30+20), (j*30+20), 25)
+                self.grid[i][j] = Cell(False, (i*30+20), (j*30+20), 25)
+        # now assign mines
+        count = self.mineCount
+        while count > 0:
+            # static mine counter based on difficulty
+            a = random.randint(0, self.width-1)
+            b = random.randint(0, self.height-1)
+            if self.grid[a][b].mine == False:
+                self.grid[a][b].mine = True
+                count -= 1
+                    
 
     # Renders the Minezone
     def renderMinezone(self):
@@ -188,7 +219,7 @@ class Cell:
 
 
 # Define new Minezone  
-NewMine = Minezone(sizex, sizey)
+NewMine = Minezone(medium)
 # Initialise Cells
 NewMine.createCells()
 NewMine.findNeighbours()
